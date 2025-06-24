@@ -1,96 +1,137 @@
 # DF-GAN
 
-해당 레포지토리는 https://github.com/tobran/DF-GAN 기반으로 실행 가이드를 보강하여 구성한 GitHub 저장소입니다.
+> **해당 Repository는 **[**DF-GAN**](https://github.com/tobran/DF-GAN)** 실행 가이드를 보강하여 구성한 프로젝트입니다.**
 
-## 요구 사항
-- Ubuntu
-- python 3.8
-- Pytorch 1.9(자신의 CUDA 버전에 맞게 설치)
-- 1x12GB NVIDIA GPU 이상(필자는 RTX 3090 환경 사용)
+---
 
+## 📋 요구 사항
 
+- **운영체제**: Ubuntu
+- **Python**: 3.8
+- **PyTorch**: 1.9 (CUDA 버전에 맞춰 설치)
+- **GPU**: 12GB 이상 (예: RTX 3090)
 
-해당 레포 clone
-```
-git clone https://github.com/JDeokk/DF-GAN
+---
+
+## 🚀 설치
+
+```bash
+# 저장소 클론
+git clone https://github.com/tobran/DF-GAN.git
+cd DF-GAN
+
+# 가상환경 생성 (conda 예시)
+conda create -n DFGAN python=3.8 -y
+conda activate DFGAN
+
+# 의존성 설치
 pip install -r requirements.txt
-cd DF-GAN/code/
 ```
 
+---
 
-## 준비
-### 데이터셋
-1. 아래 링크에서 전처리된 메타데이터를 내려받아 data/ 폴더에 압축을 품
-Birds 메타데이터: https://drive.google.com/file/d/1I6ybkR7L64K8hZOraEZDuHh0cCJw5OUj/view?usp=sharing
+## 📂 데이터 준비
 
-3. CUB-200-2011(Birds) 이미지 데이터를 다운로드한 뒤 data/birds/ 폴더에 압축을 품
-다운로드 링크: http://www.vision.caltech.edu/visipedia/CUB-200-2011.html
+1. **메타데이터 다운로드**
 
+   - Birds: [preprocessed metadata](https://drive.google.com/file/d/1I6ybkR7L64K8hZOraEZDuHh0cCJw5OUj/view?usp=sharing)
+   - coco : [preprocessed metadata](https://drive.google.com/file/d/15Fw-gErCEArOFykW3YTnLKpRcPgI_3AB/view)
+   - 압축을 풀어 `data/` 디렉터리에 위치시킵니다.
 
-## 학습  
-  ```bash
-  bash scripts/train.sh ./cfg/bird.yml
-  ```
+2. **이미지 데이터 다운로드**
 
-학습이 예기치 않게 중단된 경우, scripts/train.sh 내부의 다음 두 변수를 수정하여 이어서 학습할 수 있음
+   - CUB-200-2011 (Birds): [다운로드 링크](https://www.vision.caltech.edu/datasets/cub_200_2011/)
+   - `data/birds/` 폴더에 압축을 풀어주세요.
+   - coco2014: [다운로드 링크](https://cocodataset.org/#download)
+   - `data/coco/images` 폴더에 압축을 풀어주세요.
+   
 
-재개할 에폭 번호 (예: 10)
+---
+
+## 🔥 학습
+
+```bash
+cd DF-GAN/code/
+bash scripts/train.sh ./cfg/bird.yml   # Birds dataset
+bash scripts/train.sh ./cfg/coco.yml   # COCO dataset
+```
+
+**학습 재개**\
+`scripts/train.sh` 내 파라미터 수정으로 중단된 지점부터 이어서 학습 가능:
+
+```bash
+# 재개할 epoch
 resume_epoch=10
-
-로드할 모델 파일 경로
+# 불러올 체크포인트 경로
 resume_model_path=./models/checkpoint_epoch_10.pth
+```
 
+---
 
-## 평가
+## 📊 평가 (FID)
 
-### Pretrained Model
-- [DF-GAN for bird](https://drive.google.com/file/d/1rzfcCvGwU8vLCrn5reWxmrAMms6WQGA6/view?usp=sharing) 다운로드 후 /code/saved_models/bird/에 압축해제
+### Pretrained 모델
 
-### FID(Frechet Inception Distance) 계산
+- **Bird**: [다운로드](https://drive.google.com/file/d/1rzfcCvGwU8vLCrn5reWxmrAMms6WQGA6/view?usp=sharing) 후 `code/saved_models/bird/`에 압축 해제
+- **coco**: [다운로드](https://drive.google.com/file/d/1e_AwWxbClxipEnasfz_QrhmLlv2-Vpyq/view) 후 `code/saved_models/coco/`에 압축 해제
 
-테스트 캡션으로부터 약 3만 장의 이미지를 합성한 뒤, 각 데이터셋의 **합성 이미지**와 **실제 테스트 이미지** 간 FID를 계산
+### FID 계산
 
 ```bash
 cd DF-GAN/code/
-bash scripts/calc_FID.sh ./cfg/bird.yml
+bash scripts/calc_FID.sh ./cfg/bird.yml   # Birds dataset
+bash scripts/calc_FID.sh ./cfg/coco.yml   # COCO dataset
 ```
 
-### 추가 팁
+- 합성 이미지(약 3만 장)를 저장하려면, `*.yml` 설정에서 `save_image: True`로 변경하세요.
 
-- 평가 과정은 합성된 이미지(약 3만 장)를 기본적으로 저장하지 않음  
-  이미지를 저장하려면, 해당 YAML 설정 파일에서 아래 항목을 `True`로 변경:
+---
 
-  ```yaml
-  save_image: True
-  ```
+## 🎨 샘플링
 
-## 샘플링
 ```bash
 cd DF-GAN/code/
 ```
-### 예시 텍스트 설명을 이용하여 이미지 합성
-  `bash scripts/sample.sh ./cfg/bird.yml`
 
-### 직접 텍스트 설명을 작성하여 이미지 합성
-  -  ./code/example_captions/dataset_name.txt 파일 내 텍스트 설명 수정 
+### 1. 예제 캡션으로 이미지 합성
 
-        `bash scripts/sample.sh ./cfg/bird.yml`
+```bash
+bash scripts/sample.sh ./cfg/bird.yml    # Birds
+bash scripts/sample.sh ./cfg/coco.yml    # COCO
+```
 
-  - 합성된 이미지는  ./code/samples에 저장됨
+### 2. 직접 캡션 작성 후 합성
 
-### Prompt (this bird has wings that are black and has a red belly) 예시:
+1. `./code/example_captions/<dataset_name>.txt` 파일 수정
+2. 동일 스크립트 실행:
 
+```bash
+bash scripts/sample.sh ./cfg/bird.yml    # Birds
+bash scripts/sample.sh ./cfg/coco.yml    # COCO
+```
+
+- 생성된 이미지는 `./code/samples/` 폴더에 저장됩니다.
+
+#### Prompt 예시
+
+```text
+this bird has wings that are black and has a red belly
+```
 <img src="https://github.com/user-attachments/assets/fa2c7c8d-3c98-4bf4-898f-65be747b653b" width="300" alt="bird example"/>
 
+---
 
-### DF-GAN 인용
+## 📑 인용
 
-```
+```bibtex
 @inproceedings{tao2022df,
-  title={DF-GAN: A Simple and Effective Baseline for Text-to-Image Synthesis},
-  author={Tao, Ming and Tang, Hao and Wu, Fei and Jing, Xiao-Yuan and Bao, Bing-Kun and Xu, Changsheng},
-  booktitle={Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
-  pages={16515--16525},
-  year={2022}
+  title        = {DF-GAN: A Simple and Effective Baseline for Text-to-Image Synthesis},
+  author       = {Tao, Ming and Tang, Hao and Wu, Fei and Jing, Xiao-Yuan and Bao, Bing-Kun and Xu, Changsheng},
+  booktitle    = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition},
+  pages        = {16515--16525},
+  year         = {2022}
 }
 ```
+
+
+
